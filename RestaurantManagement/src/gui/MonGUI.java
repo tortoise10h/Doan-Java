@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.Rectangle;
@@ -51,11 +52,13 @@ public class MonGUI extends JPanel{
 		
 		//display product name
 		JLabel tenMonLb = new JLabel(this.tenMon,SwingConstants.CENTER);
+		tenMonLb.setFont(new Font("Tahoma", Font.PLAIN,14));
 		tenMonLb.setPreferredSize(new Dimension(150,30));
 		add(tenMonLb,BorderLayout.CENTER);
 		
 		//display product price
 		JLabel giaLb = new JLabel(Integer.toString(this.gia)+"đ",SwingConstants.CENTER);
+		giaLb.setFont(new Font("Tahoma", Font.PLAIN,14));
 		giaLb.setPreferredSize(new Dimension(150,30));
 		add(giaLb,BorderLayout.SOUTH);
 		

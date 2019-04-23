@@ -5,72 +5,61 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class HoaDonNhapDTO {
-	private String maHoaDon;
-	private Date thoiGianXuat;
-	private String maNcc;
-	private String maNv;
-	private double tongTien;
+	private int maHoaDonNhap;
+	private Date gioXuat;
+	private String maNhaCungCap;
+	private String nhanVien;
+	private int tongTien;
 	private boolean trangThai;
 	
 	public HoaDonNhapDTO() {}
-	public HoaDonNhapDTO(String maHoaDon, Date thoiGianXuat, String maNcc, String maNv, double tongTien, boolean trangThai) {
-		this.maHoaDon = maHoaDon;
-		this.thoiGianXuat = thoiGianXuat;
-		this.maNcc = maNcc;
-		this.maNv = maNv;
+	public HoaDonNhapDTO(int maHoaDonNhap, Date gioXuat, String maNhaCungCap, String nhanVien, int tongTien, boolean trangThai) {
+		this.maHoaDonNhap = maHoaDonNhap;
+		this.gioXuat = gioXuat;
+		this.maNhaCungCap = maNhaCungCap;
+		this.nhanVien = nhanVien;
 		this.tongTien = tongTien;
 		this.trangThai = trangThai;
 	}
 	
-	public String getMaHoaDon() {
-		return maHoaDon;
-	}
-	public void setMaHoaDon(String maHoaDon) {
-		this.maHoaDon = maHoaDon;
-	}
 	
 	
-	public Date getThoiGianXuat() {
-		return thoiGianXuat;
+	public int getMaHoaDonNhap() {
+		return maHoaDonNhap;
 	}
-	public void setThoiGianXuat(Date thoiGianXuat) {
-		this.thoiGianXuat = thoiGianXuat;
+	public void setMaHoaDonNhap(int maHoaDonNhap) {
+		this.maHoaDonNhap = maHoaDonNhap;
 	}
-	public String getMaNcc() {
-		return maNcc;
+	public Date getGioXuat() {
+		return gioXuat;
 	}
-	public void setMaNcc(String maNcc) {
-		this.maNcc = maNcc;
+	public void setGioXuat(Date gioXuat) {
+		this.gioXuat = gioXuat;
 	}
-	public double getTongTien() {
+	
+	public String getMaNhaCungCap() {
+		return maNhaCungCap;
+	}
+	public void setMaNhaCungCap(String maNhaCungCap) {
+		this.maNhaCungCap = maNhaCungCap;
+	}
+	public String getNhanVien() {
+		return nhanVien;
+	}
+	public void setNhanVien(String nhanVien) {
+		this.nhanVien = nhanVien;
+	}
+	public int getTongTien() {
 		return tongTien;
 	}
-	public void setTongTien(double tongTien) {
+	public void setTongTien(int tongTien) {
 		this.tongTien = tongTien;
-	}
-	public String getMaNv() {
-		return maNv;
-	}
-	public void setMaNv(String maNv) {
-		this.maNv = maNv;
 	}
 	public boolean isTrangThai() {
 		return trangThai;
 	}
 	public void setTrangThai(boolean trangThai) {
 		this.trangThai = trangThai;
-	}
-	
-	public static Date StringToDate(String dateStr) {
-		Date result = null;
-		try {
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			result = dateFormat.parse(dateStr);
-		}catch(ParseException e){
-	        e.printStackTrace();
-	    }
-		
-		return result;
 	}
 	
 	

@@ -58,7 +58,7 @@ public class PdfExportHelper {
 			//table for processing bill
 			Table table = new Table(new float[] {10,3,3});
 			table.setWidth(UnitValue.createPercentValue(100));
-			
+			 
 			//add stuff to table
 			//table header
 			table.addHeaderCell(new Cell().add(new Paragraph("Tên món").setFont(boldFont)));

@@ -23,6 +23,7 @@ public class MainFrame extends JFrame{
 	private JPanel billManagementMenu;
 	private JPanel productManagementMenu;
 	private JPanel employeeManagementMenu;
+	private JPanel statisticMenu;
 	private JPanel closeMenu;
 	private JPanel minimizeMenu;
 	
@@ -31,6 +32,7 @@ public class MainFrame extends JFrame{
 	private HoaDonGUI billManagementDisplay;
 	private JPanel productManagementDisplay;
 	private JPanel employeeManagementDisplay;
+	private JPanel statisticDisplay;
 	
 	public MainFrame() {
 		
@@ -139,6 +141,17 @@ public class MainFrame extends JFrame{
 		addMouseListenerForMenu(employeeManagementMenu, displayZonePanel, employeeManagementDisplay);
 		navigationPanel.add(employeeManagementMenu);
 		
+		//FOR STATISTIC PANEL
+		statisticMenu = new PanelLinkGUI("#0a0623",new Rectangle(890,4,170,50));
+		statisticMenu.setName("statisticMenu");
+		JLabel statisticLb = new JLabel("Thống kê");
+		formatNavigationLabel(statisticLb,new Font("Tahoma",Font.BOLD,14),"#fcfcfc",new Rectangle(60,0,100,50));
+		JLabel statisticIcon = null;
+		BufferedImage statisticImgIcon = null;
+		createMenuIcon(statisticIcon,statisticImgIcon,"src/images/application_icon/statistic-white-icon.png",new Rectangle(5,0,50,50),statisticMenu);
+		statisticMenu.add(statisticLb);
+		addMouseListenerForMenu(statisticMenu, displayZonePanel, statisticDisplay);
+		navigationPanel.add(statisticMenu);
 		
 		//FOR MINIMIZE AND CLOSE BUTTON
 		minimizeMenu = new PanelLinkGUI("#0a0623",new Rectangle(1200,4,40,54));
@@ -173,6 +186,7 @@ public class MainFrame extends JFrame{
 		serviceManagementDisplay = new BanHangGUI();
 		billManagementDisplay = new HoaDonGUI();
 		productManagementDisplay = new SanPhamGUI();
+		statisticDisplay = new ThongKeGUI();
 		
 		displayZonePanel.add(serviceManagementDisplay);
 //		displayZonePanel.add(billManagementDisplay);
@@ -221,17 +235,16 @@ public class MainFrame extends JFrame{
 						billManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
 						productManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
 						employeeManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
+						statisticMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
 						break;
 					}
 					case "billMenu":{
-						billManagementDisplay.removeAll();
-						billManagementDisplay.init();
-						billManagementDisplay.repaint();
-						billManagementDisplay.revalidate();
+						
 						serviceManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
 						billManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,5,0,Color.decode("#e22b31")));
 						productManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
 						employeeManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
+						statisticMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
 						break;
 					}
 					case "productMenu":{
@@ -240,6 +253,7 @@ public class MainFrame extends JFrame{
 						billManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
 						productManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,5,0,Color.decode("#e22b31")));
 						employeeManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
+						statisticMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
 						break;
 					}
 					case "employeeMenu":{
@@ -247,6 +261,16 @@ public class MainFrame extends JFrame{
 						billManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
 						productManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
 						employeeManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,5,0,Color.decode("#e22b31")));
+						statisticMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
+						break;
+					}
+					
+					case "statisticMenu":{
+						statisticMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#e22b31")));
+						serviceManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
+						billManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
+						productManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,0,0,Color.decode("#0a0623")));
+						employeeManagementMenu.setBorder(BorderFactory.createMatteBorder(0,0,5,0,Color.decode("#0a0623")));
 						break;
 					}
 				}

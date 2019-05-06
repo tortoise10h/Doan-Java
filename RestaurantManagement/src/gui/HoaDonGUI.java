@@ -87,6 +87,9 @@ public class HoaDonGUI extends JPanel{
 	private DefaultTableModel hdxModel;
 	private TableRowSorter<TableModel> hdxRowSorter;
 	
+	private DefaultTableModel hdnModel;
+	private TableRowSorter<TableModel> hdnRowSorter;
+	
 	private JPanel hdxFormManagement;
 	
 	private JButton createHoaDonNhap;
@@ -114,7 +117,7 @@ public class HoaDonGUI extends JPanel{
 	private ArrayList<MonDTO> monList;
 	
 	
-	private String currentTable;
+	private String currentTable = "hdnTable";
 	private int currentBillID;
 
 	
@@ -204,7 +207,6 @@ public class HoaDonGUI extends JPanel{
 	public void switchButtonInit() {
 		hdnBtn = new JPanel();
 		hdxBtn = new JPanel();	
-	    currentTable = "hdnTable";
 		
 		hdnBtn.setBounds(new Rectangle(0,170,100,30));
 		hdnBtn.setName("hdnBtn");
@@ -241,6 +243,11 @@ public class HoaDonGUI extends JPanel{
 				if(currentTable.equals("hdxTable")) {
 					hdPanel.removeAll();
 					hdxPanelInit(hdxList);
+					hdPanel.repaint();
+					hdPanel.revalidate();
+				}else {
+					hdPanel.removeAll();
+					hdnPanelInit(hdnList);
 					hdPanel.repaint();
 					hdPanel.revalidate();
 				}
@@ -319,8 +326,8 @@ public class HoaDonGUI extends JPanel{
 		
 		int i = 0;
 		Vector row;
-		hdxModel = new DefaultTableModel(header,0);
-		while(i < hdnList.size()) {
+		hdnModel = new DefaultTableModel(header,0);
+		while(i < hoaDonNhapList.size()) {
 			SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");  
 			row = new Vector();
 			row.add(hoaDonNhapList.get(i).getMaHoaDonNhap());
@@ -328,14 +335,18 @@ public class HoaDonGUI extends JPanel{
 			row.add(hoaDonNhapList.get(i).getNhanVien());
 			row.add(hoaDonNhapList.get(i).getTongTien());
 			row.add(formatter.format(hoaDonNhapList.get(i).getGioXuat()));
-			hdxModel.addRow(row);
+			hdnModel.addRow(row);
 			i++;
 		}
 		
-		hdnTable.setModel(hdxModel);
-		hdnTable.setBackground(Color.decode("#ffffff"));
-		addListSelectionListenerForHoaDonNhapTable(hdnTable, chiTietHoaDonNhapList);
+		hdnTable.setModel(hdnModel);
 		
+		//for table sort by type of search field
+		hdnRowSorter = new TableRowSorter<>(hdnTable.getModel());
+		tableSortFilter(hdnTable,hdnModel);
+		
+		hdnTable.setBackground(Color.decode("#ffffff"));
+		addListSelectionListenerForHoaDonNhapTable(hdnTable, chiTietHoaDonNhapList);	
 		scroll.setBounds(new Rectangle(0,0,800,450));
 		hdnPanel.add(scroll);
 		hdPanel.add(hdnPanel);
@@ -471,6 +482,7 @@ public class HoaDonGUI extends JPanel{
 		hdxPanel = new JPanel();
 		hdxPanel.setLayout(null);
 		hdxPanel.setBounds(new Rectangle(0,0,800,450));
+	
 		
 		ArrayList<ChiTietHoaDonXuatDTO> chiTietHoaDonXuatList =  chiTietHoaDonXuatBus.getDsChiTietHoaDonXuat();
 		
@@ -516,16 +528,20 @@ public class HoaDonGUI extends JPanel{
 		//for table sort by type on searchTable text field
 		hdxRowSorter = new TableRowSorter<>(hdxTable.getModel());
 		tableSortFilter(hdxTable,hdxModel);
-		addListSelectionListenerForHoaDonXuatTable(hdxTable, chiTietHoaDonXuatList);
 		
 		hdxTable.setBackground(Color.decode("#ffffff"));
 		scroll.setBounds(new Rectangle(0,0,800,450));
+		addListSelectionListenerForHoaDonXuatTable(hdxTable, chiTietHoaDonXuatList);
 		hdxPanel.add(scroll);
 		hdPanel.add(hdxPanel);
 	}
 	
 	public void tableSortFilter(JTable table, DefaultTableModel tableModel) {
-		table.setRowSorter(hdxRowSorter);
+		if(currentTable.equals("hdxTable")) {
+			table.setRowSorter(hdxRowSorter);
+		}else {
+			table.setRowSorter(hdnRowSorter);
+		}
 		
 		searchTable.getDocument().addDocumentListener(new DocumentListener() {
 			
@@ -537,25 +553,48 @@ public class HoaDonGUI extends JPanel{
 
 			@Override
 			public void insertUpdate(DocumentEvent arg0) {
-				String text = searchTable.getText();
-				int choice = hdxSearchTableChoices.getSelectedIndex();
-				if(text.trim().length() == 0) {
-					hdxRowSorter.setRowFilter(null);
-				}else {
-					hdxRowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text,choice));
+				if(currentTable.equals("hdxTable")) {
+					int choice = hdxSearchTableChoices.getSelectedIndex();
+					String text = searchTable.getText();
+
+	                if (text.trim().length() == 0) {
+	                    hdxRowSorter.setRowFilter(null);
+	                } else {
+	                    hdxRowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text,choice));
+	                }
+				}else if(currentTable.equals("hdnTable")){
+					int choice = hdnSearchTableChoices.getSelectedIndex();
+					String text = searchTable.getText();
+
+	                if (text.trim().length() == 0) {
+	                    hdnRowSorter.setRowFilter(null);
+	                } else {
+	                    hdnRowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text,choice));
+	                }
 				}
 			}
 
 			@Override
 			public void removeUpdate(DocumentEvent arg0) {
-				int choice = hdxSearchTableChoices.getSelectedIndex();
-				String text = searchTable.getText();
+				if(currentTable.equals("hdxTable")) {
+					int choice = hdxSearchTableChoices.getSelectedIndex();
+					String text = searchTable.getText();
 
-                if (text.trim().length() == 0) {
-                    hdxRowSorter.setRowFilter(null);
-                } else {
-                    hdxRowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text,choice));
-                }
+	                if (text.trim().length() == 0) {
+	                    hdxRowSorter.setRowFilter(null);
+	                } else {
+	                    hdxRowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text,choice));
+	                }
+				}else if(currentTable.equals("hdnTable")){
+					int choice = hdnSearchTableChoices.getSelectedIndex();
+					String text = searchTable.getText();
+
+	                if (text.trim().length() == 0) {
+	                    hdnRowSorter.setRowFilter(null);
+	                } else {
+	                    hdnRowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text,choice));
+	                }
+				}
 			}
 			
 		});
@@ -761,8 +800,11 @@ public class HoaDonGUI extends JPanel{
 		hdxFormManagement.setBackground(Color.decode("#f2f2f2"));
 		
 		ArrayList<String> dayList = new ArrayList<String>();
+		dayList.add("Không");
 		ArrayList<String> monthList = new ArrayList<String>();
+		monthList.add("Không");
 		ArrayList<String> yearList = new ArrayList<String>();
+		yearList.add("Không");
 		
 		//Initialize day, month and year for combo box
 		//day
@@ -880,42 +922,39 @@ public class HoaDonGUI extends JPanel{
 		leftSide.add(hdxFormManagement);
 	}
 	
-	public void hoaDonXuatFilter() {
+	public void hoaDonFilter() {
 		ArrayList<HoaDonXuatDTO> hoaDonXuatList;
-		hoaDonXuatList = filterByDate();
-	    hoaDonXuatList = filterByPrice(hoaDonXuatList);
+		ArrayList<HoaDonNhapDTO> hoaDonNhapList;
+		
 		
 		if(currentTable.equals("hdxTable")) {
+			hoaDonXuatList = hoaDonXuatFilterByDate();
+			hoaDonXuatList = hoaDonXuatFilterByPrice(hoaDonXuatList);
 			//repaint table
 			hdPanel.removeAll();
 			hdxPanelInit(hoaDonXuatList);
 			hdPanel.repaint();
 			hdPanel.revalidate();
+		}else {
+			hoaDonNhapList = hoaDonNhapFilterByDate();
+			hoaDonNhapList = hoaDonNhapFilterByPrice(hoaDonNhapList);
+			//repaint table
+			hdPanel.removeAll();
+			hdnPanelInit(hoaDonNhapList);
+			hdPanel.repaint();
+			hdPanel.revalidate();
 		}
 	}
 	
-	public ArrayList<HoaDonXuatDTO> filterByDate() {
-		String fromDayValue = fromDay.getSelectedItem().toString();
-		String fromMonthValue = fromMonth.getSelectedItem().toString();
-		String fromYearValue = fromYear.getSelectedItem().toString();
+	public ArrayList<HoaDonXuatDTO> hoaDonXuatFilterByDate() {
+		ArrayList<String> dateList = getDateFromDateFilterBox();
+		String fromDayValue = dateList.get(0);
+		String fromMonthValue = dateList.get(1);
+		String fromYearValue = dateList.get(2);
 		
-		String toDayValue = toDay.getSelectedItem().toString();
-		String toMonthValue = toMonth.getSelectedItem().toString();
-		String toYearValue = toYear.getSelectedItem().toString();
-
-		//Make sure every month and day all have 2 characters (dd or MM)
-		if(fromDayValue.length() < 2) {
-			fromDayValue = "0" + fromDayValue;
-		}
-		if(fromMonthValue.length() < 2) {
-			fromMonthValue = "0" + fromMonthValue;
-		}
-		if(toDayValue.length() < 2) {
-			toDayValue = "0" + toDayValue;
-		}
-		if(toMonthValue.length() < 2) {
-			toMonthValue = "0" + toMonthValue;
-		}
+		String toDayValue = dateList.get(3);
+		String toMonthValue = dateList.get(4);
+		String toYearValue = dateList.get(5);
 		
 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 		Date fromDate = null;
@@ -956,13 +995,121 @@ public class HoaDonGUI extends JPanel{
 		return hoaDonXuatListTemp;
 	}
 	
-	public ArrayList<HoaDonXuatDTO> filterByPrice(ArrayList<HoaDonXuatDTO> hoaDonXuatList){
+	public ArrayList<HoaDonNhapDTO> hoaDonNhapFilterByDate() {
+		ArrayList<String> dateList = getDateFromDateFilterBox();
+		
+		String fromDayValue = dateList.get(0);
+		String fromMonthValue = dateList.get(1);
+		String fromYearValue = dateList.get(2);
+		
+		String toDayValue = dateList.get(3);
+		String toMonthValue = dateList.get(4);
+		String toYearValue = dateList.get(5);
+		
+		
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		Date fromDate = null;
+		Date toDate = null;
+		
+		//parse time from string to date type
+		try {
+			fromDate = dateFormat.parse(fromDayValue + "/" + fromMonthValue + "/" + fromYearValue);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			toDate = dateFormat.parse(toDayValue + "/" + toMonthValue + "/" + toYearValue);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//This array list hold all bill that sastify date filter
+		ArrayList<HoaDonNhapDTO> hoaDonNhapListTemp = new ArrayList<HoaDonNhapDTO>();
+	
+		for(int i = 0; i < hdnList.size(); i++) {
+			//parse dd/mm/yyyy hh:mm:ss of gioXuat instance to just dd/mm/yyyy to compare with date from user input
+			String str = dateFormat.format(hdnList.get(i).getGioXuat());
+			Date temp = null;
+			try {
+				temp = dateFormat.parse(str);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+			if(temp.equals(fromDate) || temp.after(fromDate) && temp.before(toDate) || temp.equals(toDate)) {
+				hoaDonNhapListTemp.add(hdnList.get(i));
+			}
+		}
+		
+		return hoaDonNhapListTemp;
+	}
+	
+	public ArrayList<String> getDateFromDateFilterBox(){
+		ArrayList<String> dateList = new ArrayList<String>();
+		
+		String fromDayValue = fromDay.getSelectedItem().toString();
+		String fromMonthValue = fromMonth.getSelectedItem().toString();
+		String fromYearValue = fromYear.getSelectedItem().toString();
+		
+		String toDayValue = toDay.getSelectedItem().toString();
+		String toMonthValue = toMonth.getSelectedItem().toString();
+		String toYearValue = toYear.getSelectedItem().toString();
+		
+		//if date value equals to "không" that's mean we will take current date
+		if(fromDayValue.equals("Không")) {
+			fromDayValue = Integer.toString(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+		}
+		if(fromMonthValue.equals("Không")) {
+			fromMonthValue = Integer.toString(Calendar.getInstance().get((Calendar.MONTH + 1)));
+		}
+		if(fromYearValue.equals("Không")) {
+			fromYearValue = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
+		}
+		
+		if(toDayValue.equals("Không")) {
+			toDayValue = Integer.toString(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+		}
+		if(toMonthValue.equals("Không")) {
+			toMonthValue = Integer.toString(Calendar.getInstance().get((Calendar.MONTH + 1)));
+		}
+		if(toYearValue.equals("Không")) {
+			toYearValue = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
+		}
+		
+		//Make sure every month and day all have 2 characters (dd or MM)
+		if(fromDayValue.length() < 2) {
+			fromDayValue = "0" + fromDayValue;
+		}
+		if(fromMonthValue.length() < 2) {
+			fromMonthValue = "0" + fromMonthValue;
+		}
+		if(toDayValue.length() < 2) {
+			toDayValue = "0" + toDayValue;
+		}
+		if(toMonthValue.length() < 2) {
+			toMonthValue = "0" + toMonthValue;
+		}
+		
+		dateList.add(fromDayValue);
+		dateList.add(fromMonthValue);
+		dateList.add(fromYearValue);
+		
+		dateList.add(toDayValue);
+		dateList.add(toMonthValue);
+		dateList.add(toYearValue);
+		
+		return dateList;
+	}
+	
+	public ArrayList<HoaDonXuatDTO> hoaDonXuatFilterByPrice(ArrayList<HoaDonXuatDTO> hoaDonXuatList){
 		ArrayList<HoaDonXuatDTO> hoaDonXuatListTemp = new ArrayList<HoaDonXuatDTO>();
 		
 		int fromPriceValue;
 		int toPriceValue;
 		boolean is_changed = false;
 		
+		//if user input both fromPrice and toPrice
 		if(fromPriceField.getText().equals("Nhập vào giá tiền") == false && toPriceField.getText().equals("Nhập vào giá tiền") == false) {
 			fromPriceValue = Integer.parseInt(fromPriceField.getText());
 			toPriceValue = Integer.parseInt(toPriceField.getText());
@@ -972,7 +1119,9 @@ public class HoaDonGUI extends JPanel{
 					is_changed = true;
 				}
 			}
-		}else if(fromPriceField.getText().equals("Nhập vào giá tiền") == false && toPriceField.getText().equals("Nhập vào giá tiền") == true) {
+		}
+		//if user input just fromPrice
+		else if(fromPriceField.getText().equals("Nhập vào giá tiền") == false && toPriceField.getText().equals("Nhập vào giá tiền") == true) {
 			fromPriceValue = Integer.parseInt(fromPriceField.getText());
 			for(int i = 0; i < hoaDonXuatList.size(); i++) {
 				if(hoaDonXuatList.get(i).getTongTien() >= fromPriceValue) {
@@ -980,7 +1129,9 @@ public class HoaDonGUI extends JPanel{
 					is_changed = true;
 				}
 			}
-		}else if(fromPriceField.getText().equals("Nhập vào giá tiền") == true && toPriceField.getText().equals("Nhập vào giá tiền") == false) {
+		}
+		//if user input just toPrice
+		else if(fromPriceField.getText().equals("Nhập vào giá tiền") == true && toPriceField.getText().equals("Nhập vào giá tiền") == false) {
 			toPriceValue = Integer.parseInt(toPriceField.getText());
 			for(int i = 0; i < hoaDonXuatList.size(); i++) {
 				if(hoaDonXuatList.get(i).getTongTien() <= toPriceValue) {
@@ -988,7 +1139,9 @@ public class HoaDonGUI extends JPanel{
 					is_changed = true;
 				}
 			}
-		}else {
+		}
+		//if user didn't input price to filter
+		else {
 			hoaDonXuatListTemp = hoaDonXuatList;
 		}
 		
@@ -997,12 +1150,59 @@ public class HoaDonGUI extends JPanel{
 		return hoaDonXuatListTemp;
 	}
 	
+	public ArrayList<HoaDonNhapDTO> hoaDonNhapFilterByPrice(ArrayList<HoaDonNhapDTO> hoaDonNhapList){
+		ArrayList<HoaDonNhapDTO> hoaDonNhapListTemp = new ArrayList<HoaDonNhapDTO>();
+		
+		int fromPriceValue;
+		int toPriceValue;
+		boolean is_changed = false;
+		
+		//if user input both fromPrice and toPrice
+		if(fromPriceField.getText().equals("Nhập vào giá tiền") == false && toPriceField.getText().equals("Nhập vào giá tiền") == false) {
+			fromPriceValue = Integer.parseInt(fromPriceField.getText());
+			toPriceValue = Integer.parseInt(toPriceField.getText());
+			for(int i = 0; i < hoaDonNhapList.size(); i++) {
+				if(hoaDonNhapList.get(i).getTongTien() >= fromPriceValue && hoaDonNhapList.get(i).getTongTien() <= toPriceValue) {
+					hoaDonNhapListTemp.add(hoaDonNhapList.get(i));
+					is_changed = true;
+				}
+			}
+		}
+		//if user input just fromPrice
+		else if(fromPriceField.getText().equals("Nhập vào giá tiền") == false && toPriceField.getText().equals("Nhập vào giá tiền") == true) {
+			fromPriceValue = Integer.parseInt(fromPriceField.getText());
+			for(int i = 0; i < hoaDonNhapList.size(); i++) {
+				if(hoaDonNhapList.get(i).getTongTien() >= fromPriceValue) {
+					hoaDonNhapListTemp.add(hoaDonNhapList.get(i));
+					is_changed = true;
+				}
+			}
+		}
+		//if user input just toPrice
+		else if(fromPriceField.getText().equals("Nhập vào giá tiền") == true && toPriceField.getText().equals("Nhập vào giá tiền") == false) {
+			toPriceValue = Integer.parseInt(toPriceField.getText());
+			for(int i = 0; i < hoaDonNhapList.size(); i++) {
+				if(hoaDonNhapList.get(i).getTongTien() <= toPriceValue) {
+					hoaDonNhapListTemp.add(hoaDonNhapList.get(i));
+					is_changed = true;
+				}
+			}
+		}
+		//if user didn't input price to filter
+		else {
+			hoaDonNhapListTemp = hoaDonNhapList;
+		}
+		
+		
+		return hoaDonNhapListTemp;
+	}
+	
 	public void addActionListenerForSearchButton(JButton btn) {
 		btn.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				hoaDonXuatFilter();
+				hoaDonFilter();
 			}
 			
 		});
@@ -1029,6 +1229,22 @@ public class HoaDonGUI extends JPanel{
 						}
 						hdxBus.deleteBill(currentBillID);
 						chiTietHoaDonXuatBus.deleteBillDetail(currentBillID);
+						JOptionPane.showMessageDialog(null,"Xóa thành công");
+					}else {
+						for(int i = 0; i < hdnList.size(); i++) {
+							if(hdnList.get(i).getMaHoaDonNhap() == currentBillID) {
+								hdnList.remove(i);
+								//reload table after delete row
+								hdPanel.removeAll();
+								hdnPanelInit(hdnList);
+								hdPanel.repaint();
+								hdPanel.revalidate();
+								break;
+							}
+						}
+						hdnBus.deleteBill(currentBillID);
+						chiTietHoaDonNhapBus.deleteBillDetail(currentBillID);
+						JOptionPane.showMessageDialog(null,"Xóa thành công");
 					}
 				}
 			}
@@ -1059,19 +1275,19 @@ public class HoaDonGUI extends JPanel{
 		});
 	}
 	
+	
 	public void addMouseListenerForSwitchBtn(JPanel switchBtnPanel, JPanel parentPanel, JPanel childPanel) {
 		switchBtnPanel.addMouseListener(new MouseListener() {
 
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				// TODO Auto-generated method stub
 				switchPanel(parentPanel,childPanel);
 				if(switchBtnPanel.getName().equals("hdnBtn")) {
 					currentTable = "hdnTable";
 					hdnBtn.setBackground(Color.decode("#47e084"));
 					hdxBtn.setBackground(Color.decode("#ffffff"));
 					chiTietHoaDonNhapInit();
-					switchPanel(rightSide, hoaDonNhapForm);
+//					switchPanel(rightSide, hoaDonNhapForm);
 					
 					hdnSearchTableChoices.setVisible(true);
 					hdxSearchTableChoices.setVisible(false);
@@ -1259,7 +1475,6 @@ public class HoaDonGUI extends JPanel{
 							hdPanel.repaint();
 							hdPanel.revalidate();
 							
-							
 							JOptionPane.showMessageDialog(null,"Xuất hóa đơn nhập thành công");
 							taoHoaDonNhapDiaglog.dispose();
 						}else {
@@ -1294,7 +1509,7 @@ public class HoaDonGUI extends JPanel{
 		parentPanel.repaint();
 		parentPanel.revalidate();
 		
-//		//adding panel
+		//adding panel
 		parentPanel.add(childPanel);
 		parentPanel.repaint();
 		parentPanel.revalidate();

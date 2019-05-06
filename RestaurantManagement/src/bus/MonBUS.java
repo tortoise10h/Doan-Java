@@ -24,5 +24,29 @@ public class MonBUS {
 		this.monList = monList;
 	}
 	
+	public boolean checkAvailableMon(String maMon) {
+		int rowResult = MonDAO.checkAvailableMon(maMon);
+		if(rowResult == 0) {
+			return false;
+		}else {
+			return true;
+		}
+	}
+	
+	public void updateMon(MonDTO mon) {
+		MonDAO.updateMon(mon);
+	}
+	
+	public MonDTO getMon(String maMon) {
+		return MonDAO.getMon(maMon);
+	}
+	
+	public void addNewMon(MonDTO mon) {
+		MonDAO.addNewMon(mon);
+	}
+	
+	public void deleteMon(String maMon) {
+		MonDAO.deleteMon(maMon);
+	}
 	
 }

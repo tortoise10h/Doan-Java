@@ -187,6 +187,7 @@ public class MainFrame extends JFrame{
 		billManagementDisplay = new HoaDonGUI();
 		productManagementDisplay = new SanPhamGUI();
 		statisticDisplay = new ThongKeGUI();
+		employeeManagementDisplay = new NhanVienGUI();
 		
 		displayZonePanel.add(serviceManagementDisplay);
 //		displayZonePanel.add(billManagementDisplay);

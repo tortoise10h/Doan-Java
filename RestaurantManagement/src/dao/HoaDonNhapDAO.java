@@ -44,14 +44,14 @@ public class HoaDonNhapDAO {
 		return hdnList;
 	}
 	
-//	public static void deleteExportBill(int maHoaDon) {
-//		MysqlDatabaseAccessHelper myConn = new MysqlDatabaseAccessHelper();
-//		String query = "UPDATE hoadonxuat SET trangThai = '0' WHERE maHoaDon = " + "'" + maHoaDon + "'";
-//		myConn.open();
-//		myConn.updateDatabase(query);
-//		myConn.close();
-//	}
-//	
+	public static void deleteImportBill(int maHoaDon) {
+		MysqlDatabaseAccessHelper myConn = new MysqlDatabaseAccessHelper();
+		String query = "UPDATE hoadonnhap SET trangThai = '0' WHERE maHoaDonNhap = " + "'" + maHoaDon + "'";
+		myConn.open();
+		myConn.updateDatabase(query);
+		myConn.close();
+	}
+	
 	public static void saveImportBill(HoaDonNhapDTO hoaDonNhap, String gioXuatStr) {
 		MysqlDatabaseAccessHelper myConn = new MysqlDatabaseAccessHelper();
 		String query = "INSERT INTO hoadonnhap (gioXuat,nhanVien,maNhaCungCap,tongTien) VALUES ";

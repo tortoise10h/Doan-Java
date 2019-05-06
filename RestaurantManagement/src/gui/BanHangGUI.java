@@ -1,14 +1,19 @@
 package gui;
 import dto.BanDTO;
 import dto.ChiTietHoaDonXuatDTO;
+import dto.ChiTietMonDTO;
 import dto.HoaDonTamDTO;
 import dto.HoaDonXuatDTO;
 import dto.MonDTO;
 import dto.MonTamDTO;
+import dto.NguyenLieuDTO;
+import dto.NguyenLieuTamDTO;
 import bus.BanBUS;
 import bus.ChiTietHoaDonXuatBUS;
+import bus.ChiTietMonBUS;
 import bus.HoaDonXuatBUS;
 import bus.MonBUS;
+import bus.NguyenLieuBUS;
 import util.DateHandle;
 import util.PdfExportHelper;
 
@@ -34,6 +39,7 @@ import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -61,7 +67,13 @@ public class BanHangGUI extends JPanel{
 	private ArrayList<MonGUI> productPanelList = new ArrayList<MonGUI>();
 	private ArrayList<HoaDonTamDTO> hdTamList = new ArrayList<HoaDonTamDTO>();
 	private ArrayList<String> productInBillDetailInfo = new ArrayList<String>();
+	private ArrayList<NguyenLieuDTO> nguyenLieuList = new ArrayList<NguyenLieuDTO>();
+	private ArrayList<NguyenLieuTamDTO> nguyenLieuTamList = new ArrayList<NguyenLieuTamDTO>();
+	private ArrayList<ChiTietMonDTO> chiTietMonList = new ArrayList<ChiTietMonDTO>();
+	
 	private MonBUS monBus = new MonBUS();
+	private ChiTietMonBUS chiTietMonBus = new ChiTietMonBUS();
+	private NguyenLieuBUS nguyenLieuBus = new NguyenLieuBUS();
 	
 	private int currentTablePos;
 	
@@ -105,12 +117,29 @@ public class BanHangGUI extends JPanel{
 		setBounds(new Rectangle(0,0,1300,646));
 		setBackground(Color.decode("#ffffff"));
 		
+		initializeListOfNguyenLieu();
+		
 		tableZoneInit();
 		zoneBrandPanelInit();
 		paginationPanelInit();
 		menuZoneInit();
 		
 		
+	}
+	
+	public void initializeListOfNguyenLieu() {
+		//get nguyen lieu from database
+		nguyenLieuList = nguyenLieuBus.getAllNguyenLieu();
+		chiTietMonList = chiTietMonBus.getChiTietMonList();
+		
+		//initialize nguyenLieuTamList base on nguyenLieuList
+		for(int i = 0; i < nguyenLieuList.size(); i++) {
+			NguyenLieuTamDTO nguyenLieuTam = new NguyenLieuTamDTO();
+			nguyenLieuTam.setNguyenLieu(nguyenLieuList.get(i));
+			nguyenLieuTam.setPreProcessingQuantity(0);
+			
+			nguyenLieuTamList.add(nguyenLieuTam);
+		}
 	}
 	
 	public void zoneBrandPanelInit() {
@@ -314,14 +343,17 @@ public class BanHangGUI extends JPanel{
 		tablePagination.setBackground(Color.decode("#0a0623"));
 		
 		JButton kAButton = new JButton("Khu A");
+		kAButton.setName("zoneABtn");
 		formatPaginationButton(kAButton,new Rectangle(0,0,100,40));
 		addActionListenerForPaginationButton(kAButton,mainZonePanel,zoneA);
 		
 		JButton kBButton = new JButton("Khu B");
+		kBButton.setName("zoneBBtn");
 		formatPaginationButton(kBButton,new Rectangle(100,0,100,40));
 		addActionListenerForPaginationButton(kBButton,mainZonePanel,zoneB);
 		
 		JButton kCButton = new JButton("Khu C");
+		kCButton.setName("zoneCBtn");
 		formatPaginationButton(kCButton,new Rectangle(200,0,100,40));
 		addActionListenerForPaginationButton(kCButton,mainZonePanel,zoneC);
 		
@@ -329,8 +361,6 @@ public class BanHangGUI extends JPanel{
 		tablePagination.add(kBButton);
 		tablePagination.add(kCButton);
 		
-		
-//		paginationPanel.add(tablePagination);
 	}
 	
 	public void productListInit() {
@@ -396,14 +426,17 @@ public class BanHangGUI extends JPanel{
 		productPagination.setBackground(Color.decode("#0a0623"));
 		
 		JButton noodleButton = new JButton("Mì");
+		noodleButton.setName("noodleButton");
 		formatPaginationButton(noodleButton,new Rectangle(0,0,100,40));
 		addActionListenerForPaginationButton(noodleButton,mainZonePanel,noodlePanel);
 		
 		JButton riceButton = new JButton("Cơm");
+		riceButton.setName("riceButton");
 		formatPaginationButton(riceButton,new Rectangle(100,0,100,40));
 		addActionListenerForPaginationButton(riceButton,mainZonePanel,ricePanel);
 		
 		JButton drinkButton = new JButton("Nước");
+		drinkButton.setName("drinkButton");
 		formatPaginationButton(drinkButton,new Rectangle(200,0,100,40));
 		addActionListenerForPaginationButton(drinkButton,mainZonePanel,drinkPanel);
 		
@@ -612,9 +645,19 @@ public class BanHangGUI extends JPanel{
 			public void actionPerformed(ActionEvent e) {
 				//CHANGE ZONE BRANDING
 				zoneLb.setText(childPanel.getName());
+				JScrollPane scroll;
 				
+				if(button.getName().equals("noodleButton")) {
+					scroll = new JScrollPane(noodlePanel);
+				}else if(button.getName().equals("riceButton")) {
+					scroll = new JScrollPane(ricePanel);
+				}else if(button.getName().equals("drinkButton")) {
+					scroll = new JScrollPane(drinkPanel);
+				}else {
+					scroll = new JScrollPane(childPanel);
+				}
+			
 				//CHANGE ZONE PANEL
-				JScrollPane scroll = new JScrollPane(childPanel);
 				scroll.setBounds(new Rectangle(0,0,900,556));
 				scroll.setBorder(new EmptyBorder(0,0,0,0));
 				scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -635,9 +678,10 @@ public class BanHangGUI extends JPanel{
 					//CHANGE BRAND NAME
 					zoneLb.setText("Món Mì");
 					
+					productList = monBus.getMonListFromDAO();
+					productPanelInit();
 					//CHANGE TO PRODUCT ZONE -> SPECIFICLLY NOODLEPANEL
 					JScrollPane scroll = new JScrollPane(noodlePanel);
-					//scroll.getVerticalScrollBar().setUnitIncrement(50);
 					scroll.setBounds(new Rectangle(0,0,900,556));
 					scroll.setBorder(new EmptyBorder(0,0,0,0));
 					scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -669,25 +713,21 @@ public class BanHangGUI extends JPanel{
 
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
-//				tablePanel.setBackground(Color.decode("#bdcccc"));
+				
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				// TODO Auto-generated method stub
-//				tablePanel.setBackground(Color.decode("#abb7b7"));
+
 			}
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				// TODO Auto-generated method stub
 				
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub
 				
 			}
 			
@@ -718,49 +758,57 @@ public class BanHangGUI extends JPanel{
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				// TODO Auto-generated method stub
+				// Add product to hoaDonTamList when double click to product image
 				if(e.getClickCount() == 2) {
 					if(hdTamList.get(currentTablePos).isIs_billExport() == true) {
 						JOptionPane.showMessageDialog(null,"Bàn này đã xuất hóa đơn, bạn không thể order thêm món mới!");
 					}else {
 						//get product from user click and save as monTam for hdTamList
 						MonTamDTO monTam = new MonTamDTO(productList.get(productPosInArr),1);
-						monTam.setIs_process(false);
-						monTam.setProcessingQuantity(1);
-						//check if mon was chosen before
-						boolean is_chosen = false;	
-						for(int i = 0; i < hdTamList.get(currentTablePos).getDsMonTam().size(); i++) {
-							if(hdTamList.get(currentTablePos).getDsMonTam().get(i).getMon().getMaMon().equals(monTam.getMon().getMaMon())) {
-								//if matched, get total quantity and processing quantity and increase
-								int oldQuantity = hdTamList.get(currentTablePos).getDsMonTam().get(i).getSoLuong();
-								oldQuantity++;
-								int oldProcessingQuantity = hdTamList.get(currentTablePos).getDsMonTam().get(i).getProcessingQuantity();
-								oldProcessingQuantity++;
-								//re-set total quantity and processing quantity
-								hdTamList.get(currentTablePos).getDsMonTam().get(i).setSoLuong(oldQuantity);
-								hdTamList.get(currentTablePos).getDsMonTam().get(i).setProcessingQuantity(oldProcessingQuantity);
-								is_chosen = true;
-								break;
+						
+						if(checkProductAvailable(monTam).equals("")) {
+							monTam.setIs_process(false);
+							monTam.setProcessingQuantity(1);
+							//check if mon was chosen before
+							boolean is_chosen = false;	
+							for(int i = 0; i < hdTamList.get(currentTablePos).getDsMonTam().size(); i++) {
+								if(hdTamList.get(currentTablePos).getDsMonTam().get(i).getMon().getMaMon().equals(monTam.getMon().getMaMon())) {
+									//if matched, get total quantity and processing quantity and increase
+									int oldQuantity = hdTamList.get(currentTablePos).getDsMonTam().get(i).getSoLuong();
+									oldQuantity++;
+									int oldProcessingQuantity = hdTamList.get(currentTablePos).getDsMonTam().get(i).getProcessingQuantity();
+									oldProcessingQuantity++;
+									//re-set total quantity and processing quantity
+									hdTamList.get(currentTablePos).getDsMonTam().get(i).setSoLuong(oldQuantity);
+									hdTamList.get(currentTablePos).getDsMonTam().get(i).setProcessingQuantity(oldProcessingQuantity);
+									is_chosen = true;
+									break;
+								}
 							}
-						}
-						if(is_chosen == false) {
-							hdTamList.get(currentTablePos).getDsMonTam().add(monTam);
+							if(is_chosen == false) {
+								hdTamList.get(currentTablePos).getDsMonTam().add(monTam);
+							}
+							
+							int totalPriceOfBill = 0;
+							for(int i = 0; i < hdTamList.get(currentTablePos).getDsMonTam().size(); i++) {
+								int pricePerProduct = hdTamList.get(currentTablePos).getDsMonTam().get(i).getMon().getGia() * hdTamList.get(currentTablePos).getDsMonTam().get(i).getSoLuong();
+								totalPriceOfBill += pricePerProduct;
+							}
+							
+							hdTamList.get(currentTablePos).setTongTien(totalPriceOfBill);
+							
+							billZonePanel.removeAll();
+							billBrandInit(tableList.get(currentTablePos).getmaBan(),getTableTime(hdTamList.get(currentTablePos).getGioVao()));
+							billContentInit(hdTamList.get(currentTablePos).getDsMonTam());
+							billFootInit();
+							totalPrice.setText(Integer.toString(totalPriceOfBill)+"đ");
+							billZonePanel.repaint();
+							
+						}else {
+							JOptionPane.showMessageDialog(null, "Không thể order món này vì đã hết " + checkProductAvailable(monTam));
 						}
 						
-						int totalPriceOfBill = 0;
-						for(int i = 0; i < hdTamList.get(currentTablePos).getDsMonTam().size(); i++) {
-							int pricePerProduct = hdTamList.get(currentTablePos).getDsMonTam().get(i).getMon().getGia() * hdTamList.get(currentTablePos).getDsMonTam().get(i).getSoLuong();
-							totalPriceOfBill += pricePerProduct;
-						}
 						
-						hdTamList.get(currentTablePos).setTongTien(totalPriceOfBill);
-						
-						billZonePanel.removeAll();
-						billBrandInit(tableList.get(currentTablePos).getmaBan(),getTableTime(hdTamList.get(currentTablePos).getGioVao()));
-						billContentInit(hdTamList.get(currentTablePos).getDsMonTam());
-						billFootInit();
-						totalPrice.setText(Integer.toString(totalPriceOfBill)+"đ");
-						billZonePanel.repaint();
 					}
 				}
 			}
@@ -794,6 +842,51 @@ public class BanHangGUI extends JPanel{
 		});
 	}
 	
+	public String checkProductAvailable(MonTamDTO monTam) {
+		
+		//get newest nguyen lieu list from database
+		nguyenLieuList = nguyenLieuBus.getAllNguyenLieu();
+		
+		//update nguyenLieuTam soLuong base on newest nguyenLieuList
+		for(int i = 0; i < nguyenLieuList.size(); i++) {
+			nguyenLieuTamList.get(i).getNguyenLieu().setSoLuong(nguyenLieuList.get(i).getSoLuong());
+		}
+		
+		boolean is_product_available = true;
+		String notEnoughMaterial = "";
+		for(int i = 0; i < chiTietMonList.size(); i++) {
+			if(monTam.getMon().getMaMon().equals(chiTietMonList.get(i).getMaMon()) == true && is_product_available == true) {
+				//if maMon of of order mon match maMon in chiTietMonList
+				for(int j = 0; j < nguyenLieuTamList.size(); j++) { //loop nguyenLieuTamList to find out nguyenLieu need to change soLuong
+					if(nguyenLieuTamList.get(j).getNguyenLieu().getMaNguyenLieu().equals(chiTietMonList.get(i).getMaNguyenLieu())) {
+						//check if soLuongOf nguyenLieu enough for mon
+						
+						//For problem 0.1 + 0.2 = 0.300004 or 0.2 - 0.1 = 0.19999998
+						DecimalFormat df = new DecimalFormat("#.####");
+						double nguyenLieuLeft = Double.parseDouble(df.format(nguyenLieuTamList.get(j).getNguyenLieu().getSoLuong() - nguyenLieuTamList.get(j).getPreProcessingQuantity()));
+						
+						if(nguyenLieuLeft > 0) {
+							//increase preProcessingQuantity of nguyenLieuTamList
+							double preProcessingQuantity = Double.parseDouble(df.format(nguyenLieuTamList.get(j).getPreProcessingQuantity()));
+							double nguyenLieuOfProduct = Double.parseDouble(df.format(chiTietMonList.get(i).getSoNguyenLieu()));
+							preProcessingQuantity = preProcessingQuantity + nguyenLieuOfProduct;
+							preProcessingQuantity = Double.parseDouble(df.format(preProcessingQuantity));
+							nguyenLieuTamList.get(j).setPreProcessingQuantity(preProcessingQuantity);
+							
+						}else {
+							is_product_available = false;
+							notEnoughMaterial += nguyenLieuTamList.get(j).getNguyenLieu().getTen(); 
+							break;
+						}
+					}
+				}
+			}
+			
+		}
+		return notEnoughMaterial;
+		
+	}
+	
 	public void addMoustListenerForBillExport(JPanel exportButton) {
 		exportButton.addMouseListener(new MouseListener() {
 
@@ -801,7 +894,7 @@ public class BanHangGUI extends JPanel{
 			public void mouseClicked(MouseEvent arg0) {
 				if(JOptionPane.showConfirmDialog(null,"Tiến hành xuất hóa đơn") == JOptionPane.YES_OPTION) {
 					if(tablePanelList.get(currentTablePos).isStatus() == true) {
-						if(hdTamList.get(currentTablePos).isIs_billExport() == false) {
+						if(hdTamList.get(currentTablePos).isIs_billExport() == false) {	//If bill wasn't exported before
 							//export bill
 							HoaDonXuatBUS.exportBill(hdTamList.get(currentTablePos),tableList.get(currentTablePos).getmaBan(),"nv001");
 							
@@ -832,7 +925,7 @@ public class BanHangGUI extends JPanel{
 							tablePanelList.get(currentTablePos).removeAll();
 							tablePanelList.get(currentTablePos).init();
 							tablePanelList.get(currentTablePos).repaint();
-						}else {
+						}else { //If user want to print bill second time and more => not save to databas again
 							//print pdf bill
 							ArrayList<String> currentTime = DateHandle.getCurrentTime();
 							SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
@@ -886,21 +979,20 @@ public class BanHangGUI extends JPanel{
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				if(JOptionPane.showConfirmDialog(null,"Tiến hành in bill chế biến?") == JOptionPane.YES_OPTION) {
-					//TURN ACTIVE OF TABLE ON
-					tablePanelList.get(currentTablePos).setStatus(true);
-					tablePanelList.get(currentTablePos).setImgLink("src/images/application_icon/table-color-icon.png");
-					tablePanelList.get(currentTablePos).removeAll();
-					tablePanelList.get(currentTablePos).init();
-					tablePanelList.get(currentTablePos).repaint();
+					turnActiveTableOn();
 					
-					//get products that need to print processing bill
-					ArrayList<MonTamDTO> exportProcessingList = new ArrayList<MonTamDTO>();
-					for(int i = 0; i < hdTamList.get(currentTablePos).getDsMonTam().size(); i++) {
-						if(hdTamList.get(currentTablePos).getDsMonTam().get(i).getProcessingQuantity() != 0) {
-							exportProcessingList.add(hdTamList.get(currentTablePos).getDsMonTam().get(i));
-						}
-					}
+					ArrayList<MonTamDTO> exportProcessingList = getProductListToPrintProcessingBill();
 					
+					//create nguyenLieuTamList to save to database
+					ArrayList<NguyenLieuDTO> nguyenLieuTamListForSaveToDb = new ArrayList<NguyenLieuDTO>();
+					nguyenLieuTamListForSaveToDb = createNguyenLieuTamListForSaveToDb(exportProcessingList);
+					
+					//update nguyen lieu in database when processing mon
+					nguyenLieuBus.updateMultipleRowSoluong(nguyenLieuTamListForSaveToDb);
+					
+					//substract nguyen lieu quantity that was processed from nguyenLieuTamList
+					editNguyenLieuTamListSoluongAfterProcessing(nguyenLieuTamListForSaveToDb);
+
 					//print pdf bill
 					ArrayList<String> currentTime = DateHandle.getCurrentTime();
 					SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
@@ -908,17 +1000,14 @@ public class BanHangGUI extends JPanel{
 					try {
 						exportTime = dateFormat.parse(currentTime.get(0) + "-" + currentTime.get(1) + "-" + currentTime.get(2) + " " + currentTime.get(3) + ":" + currentTime.get(4) + ":" + currentTime.get(5));
 					} catch (ParseException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					pdf.exportProcessingBill(exportProcessingList, exportTime, tableList.get(currentTablePos).getmaBan());
-					JOptionPane.showMessageDialog(null,"In chế biến thành công");
 					
 					//set processing quantity to 0 again
 					for(int i = 0; i < hdTamList.get(currentTablePos).getDsMonTam().size(); i++) {
 						hdTamList.get(currentTablePos).getDsMonTam().get(i).setProcessingQuantity(0);
 					}
-					
 				
 					//print time of table since when it open and save open time
 					hdTamList.get(currentTablePos).setGioVao(util.DateHandle.StringToDate(currentTime.get(0) + "-" + currentTime.get(1) + "-" + currentTime.get(2) + " " + currentTime.get(3) + ":" + currentTime.get(4) + ":" + currentTime.get(5)));
@@ -956,6 +1045,59 @@ public class BanHangGUI extends JPanel{
 			}
 			
 		});
+	}
+	
+	public void turnActiveTableOn() {
+		//TURN ACTIVE OF TABLE ON
+		tablePanelList.get(currentTablePos).setStatus(true);
+		tablePanelList.get(currentTablePos).setImgLink("src/images/application_icon/table-color-icon.png");
+		tablePanelList.get(currentTablePos).removeAll();
+		tablePanelList.get(currentTablePos).init();
+		tablePanelList.get(currentTablePos).repaint();
+	}
+	
+	public ArrayList<MonTamDTO> getProductListToPrintProcessingBill(){
+		//get products that need to print processing bill
+		ArrayList<MonTamDTO> exportProcessingList = new ArrayList<MonTamDTO>();
+		for(int i = 0; i < hdTamList.get(currentTablePos).getDsMonTam().size(); i++) {
+			if(hdTamList.get(currentTablePos).getDsMonTam().get(i).getProcessingQuantity() != 0) {
+				exportProcessingList.add(hdTamList.get(currentTablePos).getDsMonTam().get(i));
+			}
+		}
+		return exportProcessingList;
+	}
+	
+	public ArrayList<NguyenLieuDTO> createNguyenLieuTamListForSaveToDb(ArrayList<MonTamDTO> exportProcessingList){
+		ArrayList<NguyenLieuDTO> nguyenLieuListForSaveToDb = new ArrayList<NguyenLieuDTO>();
+		for(int i = 0; i < exportProcessingList.size(); i++) {
+			for(int j = 0; j < chiTietMonList.size(); j++) {
+				if(exportProcessingList.get(i).getMon().getMaMon().equals(chiTietMonList.get(j).getMaMon())) {
+					for(int k = 0; k < nguyenLieuList.size(); k++) {
+						if(nguyenLieuList.get(k).getMaNguyenLieu().equals(chiTietMonList.get(j).getMaNguyenLieu())) {
+							NguyenLieuDTO nguyenLieu = new NguyenLieuDTO();
+							nguyenLieu.setMaNguyenLieu(nguyenLieuList.get(k).getMaNguyenLieu());
+							nguyenLieu.setSoLuong(chiTietMonList.get(j).getSoNguyenLieu() * exportProcessingList.get(i).getSoLuong());
+							
+							nguyenLieuListForSaveToDb.add(nguyenLieu);
+						}
+					}
+				}
+			}
+		}
+		return nguyenLieuListForSaveToDb;
+	}
+	
+	public void editNguyenLieuTamListSoluongAfterProcessing(ArrayList<NguyenLieuDTO> nguyenLieuList) {
+		DecimalFormat df = new DecimalFormat("#.####");
+		for(int i = 0; i < nguyenLieuTamList.size(); i++) {
+			for(int j = 0; j < nguyenLieuList.size(); j++) {
+				if(nguyenLieuTamList.get(i).getNguyenLieu().getMaNguyenLieu().equals(nguyenLieuList.get(j).getMaNguyenLieu())) {
+					double preProcessingQuantity = Double.parseDouble(df.format(nguyenLieuTamList.get(i).getPreProcessingQuantity()));
+					preProcessingQuantity = Double.parseDouble(df.format(preProcessingQuantity - nguyenLieuList.get(j).getSoLuong()));
+					nguyenLieuTamList.get(i).setPreProcessingQuantity(preProcessingQuantity);
+				}
+			}
+		}
 	}
 	
 	public void addMouseListenerForCloseTable(JPanel closeTableButton) {
@@ -1160,34 +1302,7 @@ public class BanHangGUI extends JPanel{
 						public void actionPerformed(ActionEvent arg0) {
 							if(JOptionPane.showConfirmDialog(null,"Bạn có chắc là muốn chỉnh sửa hay không?") == JOptionPane.YES_OPTION) {
 								if(isParseStringToInteger(quantityField.getText())) {
-									//loop through hdTamList to find out monTam to edit
-									for(int i = 0; i < hdTamList.get(currentTablePos).getDsMonTam().size(); i++) {
-										if(hdTamList.get(currentTablePos).getDsMonTam().get(i).getMon().getMaMon().equals(maMon)) {
-											//if monTam matched
-											//update quantity
-											hdTamList.get(currentTablePos).getDsMonTam().get(i).setSoLuong(Integer.parseInt(quantityField.getText()));
-											
-											//repaint billZone
-											int totalPriceOfBill = 0;
-											for(int j = 0; j < hdTamList.get(currentTablePos).getDsMonTam().size(); j++) {
-												int pricePerProduct = hdTamList.get(currentTablePos).getDsMonTam().get(j).getMon().getGia() * hdTamList.get(currentTablePos).getDsMonTam().get(j).getSoLuong();
-												totalPriceOfBill += pricePerProduct;
-											}
-											
-											hdTamList.get(currentTablePos).setTongTien(totalPriceOfBill);
-											
-											billZonePanel.removeAll();
-											billBrandInit(tableList.get(currentTablePos).getmaBan(),getTableTime(hdTamList.get(currentTablePos).getGioVao()));
-											billContentInit(hdTamList.get(currentTablePos).getDsMonTam());
-											billFootInit();
-											totalPrice.setText(Integer.toString(totalPriceOfBill)+"đ");
-											billZonePanel.repaint();
-											break;
-										}
-									}
-									JOptionPane.showMessageDialog(null, "Chỉnh sửa thành công");
-									dialog.dispose();
-									
+									editHoaDonTamQuantity(dialog, maMon, quantityField);
 								}else {
 									JOptionPane.showMessageDialog(null, "Vui lòng chỉ nhập số vào trường số lượng!");
 								}
@@ -1205,33 +1320,7 @@ public class BanHangGUI extends JPanel{
 						@Override
 						public void actionPerformed(ActionEvent arg0) {
 							if(JOptionPane.showConfirmDialog(null,"Bạn có chắc là muốn xóa món này hay không?") == JOptionPane.YES_OPTION) {
-								//loop through hdTamList to find out monTam to delete
-								for(int i = 0; i < hdTamList.get(currentTablePos).getDsMonTam().size(); i++) {
-									if(hdTamList.get(currentTablePos).getDsMonTam().get(i).getMon().getMaMon().equals(maMon)) {
-										//if monTam matched
-										//remove that monTam
-										hdTamList.get(currentTablePos).getDsMonTam().remove(i);
-										
-										//repaint billZone
-										int totalPriceOfBill = 0;
-										for(int j = 0; j < hdTamList.get(currentTablePos).getDsMonTam().size(); j++) {
-											int pricePerProduct = hdTamList.get(currentTablePos).getDsMonTam().get(j).getMon().getGia() * hdTamList.get(currentTablePos).getDsMonTam().get(j).getSoLuong();
-											totalPriceOfBill += pricePerProduct;
-										}
-										
-										hdTamList.get(currentTablePos).setTongTien(totalPriceOfBill);
-										
-										billZonePanel.removeAll();
-										billBrandInit(tableList.get(currentTablePos).getmaBan(),getTableTime(hdTamList.get(currentTablePos).getGioVao()));
-										billContentInit(hdTamList.get(currentTablePos).getDsMonTam());
-										billFootInit();
-										totalPrice.setText(Integer.toString(totalPriceOfBill)+"đ");
-										billZonePanel.repaint();
-										break;
-									}
-								}
-								JOptionPane.showMessageDialog(null, "Xóa món thành công");
-								dialog.dispose();
+								deleteMonInHoaDonTam(dialog, maMon);
 							}
 						}
 						
@@ -1259,8 +1348,110 @@ public class BanHangGUI extends JPanel{
 		
 	}
 	
-	public void editMonTam() {
+	public void editHoaDonTamQuantity(JDialog dialog, String maMon, JTextField quantityField) {
+		DecimalFormat df = new DecimalFormat("#.####");
 		
+		//get newest nguyen lieu list from database
+		nguyenLieuList = nguyenLieuBus.getAllNguyenLieu();
+		
+		//update nguyenLieuTam soLuong base on newest nguyenLieuList
+		for(int i = 0; i < nguyenLieuList.size(); i++) {
+			nguyenLieuTamList.get(i).getNguyenLieu().setSoLuong(nguyenLieuList.get(i).getSoLuong());
+		}
+		
+		boolean is_product_available = true;
+		//loop through hdTamList to find out monTam to edit
+		for(int i = 0; i < hdTamList.get(currentTablePos).getDsMonTam().size(); i++) {
+			if(hdTamList.get(currentTablePos).getDsMonTam().get(i).getMon().getMaMon().equals(maMon)) {
+				//find out mon that need to update quantity
+				//save old quantity to use it to change preProcessingQuantity of nguyenLieuTamList
+				int oldMonQuantity = hdTamList.get(currentTablePos).getDsMonTam().get(i).getSoLuong();
+				int newMonQuantity = Integer.parseInt(quantityField.getText());
+				
+				//edit preProcessingQuantity of nguyenLieuTamList
+				for(int j = 0; j < chiTietMonList.size(); j++) {
+					if(chiTietMonList.get(j).getMaMon().equals(maMon)) {
+						for(int k = 0; k < nguyenLieuTamList.size(); k++) {
+							if(chiTietMonList.get(j).getMaNguyenLieu().equals(nguyenLieuTamList.get(k).getNguyenLieu().getMaNguyenLieu())) {
+								double nguyenLieuLeft = Double.parseDouble(df.format(nguyenLieuTamList.get(k).getNguyenLieu().getSoLuong() - (newMonQuantity * chiTietMonList.get(j).getSoNguyenLieu())));
+								if(nguyenLieuLeft >= 0) {
+									int changedMonQuantity = newMonQuantity - oldMonQuantity;
+									double changedNguyenLieuQuantity = Double.parseDouble(df.format(changedMonQuantity * chiTietMonList.get(j).getSoNguyenLieu()));
+									double preProcessingQuantity = nguyenLieuTamList.get(k).getPreProcessingQuantity();
+									preProcessingQuantity = Double.parseDouble(df.format(preProcessingQuantity + changedNguyenLieuQuantity));
+									nguyenLieuTamList.get(k).setPreProcessingQuantity(preProcessingQuantity);
+								}else {
+									is_product_available = false;
+								}
+							}
+						}
+					}
+				}
+				
+				if(is_product_available) {
+					//update quantity in hdTamList
+					hdTamList.get(currentTablePos).getDsMonTam().get(i).setSoLuong(newMonQuantity);
+				}
+				
+				repaintBillZone();
+				break;
+			}
+		}
+		if(is_product_available) {
+			JOptionPane.showMessageDialog(null, "Chỉnh sửa thành công");
+			dialog.dispose();
+		}else {
+			JOptionPane.showMessageDialog(null, "Không đủ nguyên liệu để order số lượng món này, vui lòng kiểm tra lại");
+		}
+	}
+	
+	public void repaintBillZone() {
+		int totalPriceOfBill = 0;
+		for(int j = 0; j < hdTamList.get(currentTablePos).getDsMonTam().size(); j++) {
+			int pricePerProduct = hdTamList.get(currentTablePos).getDsMonTam().get(j).getMon().getGia() * hdTamList.get(currentTablePos).getDsMonTam().get(j).getSoLuong();
+			totalPriceOfBill += pricePerProduct;
+		}
+		
+		hdTamList.get(currentTablePos).setTongTien(totalPriceOfBill);
+		
+		billZonePanel.removeAll();
+		billBrandInit(tableList.get(currentTablePos).getmaBan(),getTableTime(hdTamList.get(currentTablePos).getGioVao()));
+		billContentInit(hdTamList.get(currentTablePos).getDsMonTam());
+		billFootInit();
+		totalPrice.setText(Integer.toString(totalPriceOfBill)+"đ");
+		billZonePanel.repaint();
+	}
+	
+	public void deleteMonInHoaDonTam(JDialog dialog, String maMon) {
+		DecimalFormat df = new DecimalFormat("#.####");
+		//loop through hdTamList to find out monTam to delete
+		for(int i = 0; i < hdTamList.get(currentTablePos).getDsMonTam().size(); i++) {
+			if(hdTamList.get(currentTablePos).getDsMonTam().get(i).getMon().getMaMon().equals(maMon)) {
+				//if monTam that need to delete
+				//update nguyenLieuTamList quantity before delete mon
+				for(int j = 0; j < chiTietMonList.size(); j++) {
+					if(chiTietMonList.get(j).getMaMon().equals(maMon)) {
+						for(int k = 0; k < nguyenLieuTamList.size(); k++) {
+							if(chiTietMonList.get(j).getMaNguyenLieu().equals(nguyenLieuTamList.get(k).getNguyenLieu().getMaNguyenLieu())) {
+								double changedNguyenLieuQuantity = Double.parseDouble(df.format(hdTamList.get(currentTablePos).getDsMonTam().get(i).getSoLuong() * chiTietMonList.get(j).getSoNguyenLieu()));
+								double preProcessingQuantity = nguyenLieuTamList.get(k).getPreProcessingQuantity();
+								preProcessingQuantity = Double.parseDouble(df.format(preProcessingQuantity - changedNguyenLieuQuantity));
+								nguyenLieuTamList.get(k).setPreProcessingQuantity(preProcessingQuantity);
+							}
+						}
+					}
+				}
+				
+				//remove that monTam
+				hdTamList.get(currentTablePos).getDsMonTam().remove(i);
+				
+				//repaint billZone
+				repaintBillZone();
+				break;
+			}
+		}
+		JOptionPane.showMessageDialog(null, "Xóa món thành công");
+		dialog.dispose();
 	}
 	
 	public boolean isParseStringToInteger(String intString) {

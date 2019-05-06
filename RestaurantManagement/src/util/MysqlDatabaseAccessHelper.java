@@ -1,6 +1,7 @@
 package util;
 
 import java.sql.*;
+import java.util.ArrayList;
 public class MysqlDatabaseAccessHelper {
 	public Connection conn = null;
 	
@@ -70,6 +71,27 @@ public class MysqlDatabaseAccessHelper {
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void updateDatabaseMultipleTime(ArrayList<String> queryList) {
+		Statement stmt = null;
+		for(int i = 0; i < queryList.size(); i++) {
+			try {
+				stmt = conn.createStatement();
+				stmt.executeUpdate(queryList.get(i));
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					if(stmt != null) {
+						stmt.close();
+					}
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 	}

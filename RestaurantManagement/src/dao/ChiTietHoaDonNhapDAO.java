@@ -24,7 +24,7 @@ public class ChiTietHoaDonNhapDAO {
 		myConn.close();
 	}
 	
-	public static void deleteExportBillDetail(int maHoaDonNhap) {
+	public static void deleteImportBillDetail(int maHoaDonNhap) {
 		MysqlDatabaseAccessHelper myConn = new MysqlDatabaseAccessHelper();
 		String query = "UPDATE chitiethoadonnhap SET trangThai = '0' WHERE maHoaDonNhap = " + "'" + maHoaDonNhap + "'";
 		myConn.open();

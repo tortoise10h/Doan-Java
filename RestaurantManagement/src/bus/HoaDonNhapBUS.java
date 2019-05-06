@@ -43,4 +43,8 @@ public class HoaDonNhapBUS {
 	public HoaDonNhapDTO getHoaDonNhap(int maHoaDonNhap) {
 		return HoaDonNhapDAO.getHoaDonNhap(maHoaDonNhap);
 	}
+	
+	public void deleteBill(int maHoaDon) {
+		HoaDonNhapDAO.deleteImportBill(maHoaDon);
+	}
 }

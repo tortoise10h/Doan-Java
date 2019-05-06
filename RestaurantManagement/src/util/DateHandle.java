@@ -24,7 +24,7 @@ public class DateHandle {
 		String year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
 		currentTime.add(year);
 		
-		String month = Integer.toString(Calendar.getInstance().get(Calendar.MONTH));
+		String month = Integer.toString(Calendar.getInstance().get(Calendar.MONTH) + 1);
 		if(month.length() < 2) {
 			month = "0" + month;
 		}
